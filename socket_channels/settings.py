@@ -87,11 +87,7 @@ DATABASES = {
         'USER': env('DJANGO_DATABASE_USER'),
         'PASSWORD': env('DJANGO_DATABASE_PASSWORD'),
         'HOST': env('DJANGO_DB_HOST'),
-        'PORT': env('DJANGO_DB_PORT'),
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            'use_unicode': True
-        },
+        'PORT': env('DJANGO_DB_PORT')
     }
 }
 
