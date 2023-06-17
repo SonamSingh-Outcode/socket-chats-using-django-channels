@@ -1,0 +1,103 @@
+<!-- chat/templates/chat/home.html -->
+{% extends 'chat/base.html' %}
+{% block title %} Home {% endblock title %}
+{% block content %}
+    <h1 style="margin-top: 3px;">Home Page</h1>
+    <ul>
+        {% for room in rooms %}
+            <div id="{{ room.uuid }}">
+                <li><a>{{ room.name }}</a></li>
+                {% if request.user in room.members.all %}
+                    <button id="leave-{{ room.uuid }}" class="room_option" value="leave_room {{ room.uuid }}">
+                        Leave
+                    </button>
+                {% else %}
+                    <button id="join-{{ room.uuid }}" class="room_option" value="join_room {{ room.uuid }}">
+                        Join
+                    </button>
+                {% endif %}
+                {% if request.user in room.members.all %}
+                    <button id="open-{{ room.uuid }}" class="room_option" value="open_room {{ room.uuid }}">
+                        Open
+                    </button>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+    </ul>
+{% endblock content %}
+
+
+
+{% block script %}
+
+    <script>
+
+        const base_url = `${window.location.hostname}:${window.location.port}`
+
+        const websocket = new WebSocket(`ws://${base_url}`)
+
+        websocket.onopen = function (event) {
+            console.log('client says connection opened')
+            websocket.send("Client sends Welcome")
+        }
+
+        function leave_group_handler(uuid) {
+            /*Remove the Leave Button and Open button and create a new Join Button*/
+            let leave_button = document.getElementById(`leave -${uuid}`);
+            let open_button = document.getElementById(`open -${uuid}`);
+            leave_button.remove();
+            open_button.remove();
+            let button = `<button id="join-${uuid}" class="group_option" value="join_group $    {uuid}">Join</button>`;
+            let dev_body = document.getElementById(uuid);
+            dev_body.innerHTML += button;
+            add_event_to_all_buttons();
+        }
+
+        function join_group_handler(uuid) {
+            /*Remove the Join Button and add the Leave and Open button*/
+            let  leave_button = document.getElementById(`join -${uuid}`)
+            leave_button.remove()
+            let  button = `<button id="leave-${uuid}" class="group_option" value="leave_group $    {uuid}">
+                Leave</button>`
+            let  open_button = `<button id="open-${uuid}" class="group_option" value="open_group ${uuid}">
+                Open</button>`
+
+            var dev_body = document.getElementById(uuid)
+            dev_body.innerHTML += button
+            dev_body.innerHTML += open_button
+            add_event_to_all_buttons()
+
+//get_all_buttons()
+        }
+
+        function add_event_to_all_buttons() {
+            /*Add an event listener that sends the event message to all buttons*/
+            const keys = document.querySelectorAll('.room_option');
+            keys.forEach(item => {
+                    item.addEventListener('click', send_event_message)
+                }
+            )
+        }
+
+        function send_event_message(event) {
+            /*Send the uuid and the value of the button that was clicked*/
+            const {target} = event;
+            room = target.value.split(" ")
+            room_uuid = room[1]
+            action = room[0]
+            if (action == "open_room") {
+                window.location.replace(`http://${base_url}/rooms/${room_uuid}` )
+            } else {
+                data = {
+                    "type":action,
+                    "data": room_uuid,
+                }
+                websocket.send(JSON.stringify(data))
+            }
+        }
+        add_event_to_all_buttons()
+    </script>
+{% endblock script %}
+
+    

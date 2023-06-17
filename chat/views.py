@@ -1,10 +1,56 @@
 # chat/views.py
-from django.shortcuts import render
+from django.http import HttpResponseForbidden
+from django.shortcuts import render, get_object_or_404
+from .models import Room
+from django.contrib.auth.decorators import login_required
 
 
-def index(request):
-    return render(request, "chat/index.html")
+@login_required
+def home_view(request):
+    """
+        The homepage where all rooms are listed
+    """
+    rooms = Room.objects.all()
+    user = request.user
+    context = {
+        "rooms": rooms,
+        "user": user
+    }
+    return render(request, template_name="chat/home.html", context=context)
 
 
-def room(request, room_name):
-    return render(request, "chat/room.html", {"room_name": room_name})
+@login_required
+def room_chat_view(request, uuid):
+    """
+        The view for a room where all messages and events are sent to the frontend
+    """
+
+    room = get_object_or_404(Room, uuid=uuid)
+    if request.user not in room.members.all():
+        return HttpResponseForbidden("You are not a member of this room. Kindly use the join button")
+
+    messages = room.message_set.all()
+    """
+        messages are the message the members of a room send to the room
+    """
+
+    events = room.event_set.all()
+    """
+        events are the messages that indicates that a user joined or left the room.
+        They will be sent automatically when a user join or leave the room
+    """
+
+    # Combine the events and messages for a room
+    message_and_event_list = [*messages, *events]
+
+    # Sort the combination by the timestamp so that they are listed in order
+    sorted_message_event_list = sorted(message_and_event_list, key=lambda x: x.timestamp)
+
+    # get the list of all room members
+    room_members = room.members.all()
+
+    context = {
+        "message_and_event_list": sorted_message_event_list,
+        "room_members": room_members,
+    }
+    return render(request, template_name="chat/room_chat.html", context=context)
