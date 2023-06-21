@@ -1,11 +1,10 @@
  
-<!-- chat/templates/chat/roomchat.html -->
-{% extends 'chat/base.html'%} 
+{% extends 'chat/base.html'%}
 {% block title%} Chat Room{%endblock title%}
 {% block content%}
-<textarea id="chat-log" cols="100" rows="20"></textarea><br>
-<input id="chat-message-input" type="text" size="100"><br>
-<input id="chat-message-submit" type="button" value="Send">
+<textarea id="chat-log"  rows="10" class="form-control mt-2"></textarea><br>
+<input id="chat-message-input" type="text"  class="form-control"><br>
+<input id="chat-message-submit" type="button" value="Send" class="btn btn-primary">
 
 <script>
     document.querySelector('#chat-log').value = ""
@@ -15,13 +14,14 @@
 {%endfor%}
 </script>
 
-
-<h3>Room Members</h3>
-<ul id="members">
-{% for member in room_members%}
-<li id="members-{{member.username}}">{{member}}</li>
-{%endfor%}
+    <h3>Room Members</h3>
+    <ul id="members">
+        {% for member in room_members %}
+            <li id="members-{{ member.username }}">{{ member }}</li>
+        {% endfor %}
 </ul>
+    <a href="{% url 'logout' %}"> <button class="btn btn-danger">Logout</button></a>
+
 {%endblock content%}
 
 

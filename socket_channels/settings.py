@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import environ
-
+import os
 
 from pathlib import Path
 
@@ -61,7 +61,7 @@ ROOT_URLCONF = 'socket_channels.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -145,3 +145,8 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+LOGIN_REDIRECT_URL = "home"
+# LOGOUT_REDIRECT_URL = 'accounts/login'
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]

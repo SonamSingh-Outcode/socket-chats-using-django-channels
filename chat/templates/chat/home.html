@@ -3,28 +3,32 @@
 {% block title %} Home {% endblock title %}
 {% block content %}
     <h1 style="margin-top: 3px;">Home Page</h1>
-    <ul>
-        {% for room in rooms %}
-            <div id="{{ room.uuid }}">
-                <li><a>{{ room.name }}</a></li>
-                {% if request.user in room.members.all %}
-                    <button id="leave-{{ room.uuid }}" class="room_option" value="leave_room {{ room.uuid }}">
-                        Leave
-                    </button>
-                {% else %}
-                    <button id="join-{{ room.uuid }}" class="room_option" value="join_room {{ room.uuid }}">
-                        Join
-                    </button>
-                {% endif %}
-                {% if request.user in room.members.all %}
-                    <button id="open-{{ room.uuid }}" class="room_option" value="open_room {{ room.uuid }}">
-                        Open
-                    </button>
-                {% endif %}
-            </div>
-        {% endfor %}
-
+    <ul class="list-group">
+     {% for room in rooms %}
+        <li class="list-group-item">
+        {{ room.name }}
+            {% if request.user in room.members.all %}
+                <button id="leave-{{ room.uuid }}" class="room_option button btn-danger"
+                        value="leave_room {{ room.uuid }}">
+                    Leave
+                </button>
+            {% else %}
+                <button id="join-{{ room.uuid }}" class="room_option button btn-primary" value="join_room {{ room.uuid }}">
+                    Join
+                </button>
+            {% endif %}
+            {% if request.user in room.members.all %}
+                <button id="open-{{ room.uuid }}" class="room_option button btn-secondary" value="open_room {{ room.uuid }}">
+                    Open
+                </button>
+            {% endif %}
+        </li>
+      {% endfor %}
     </ul>
+
+    <a href="{% url 'logout' %}"> <button class="btn btn-danger">Logout</button></a>
+
+
 {% endblock content %}
 
 
