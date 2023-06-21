@@ -19,6 +19,21 @@ def home_view(request):
     return render(request, template_name="chat/home.html", context=context)
 
 
+
+@login_required
+def rooms_view(request):
+    """
+        The view for a room where all messages and events are sent to the frontend
+    """
+    rooms = Room.objects.all()
+    context = {
+        "message_and_event_list": [],
+        "room_members": [],
+        "rooms": rooms,
+    }
+    return render(request, template_name="chat/room_chat.html", context=context)
+
+
 @login_required
 def room_chat_view(request, uuid):
     """
@@ -48,9 +63,10 @@ def room_chat_view(request, uuid):
 
     # get the list of all room members
     room_members = room.members.all()
-
+    rooms = Room.objects.all()
     context = {
         "message_and_event_list": sorted_message_event_list,
         "room_members": room_members,
+        "rooms": rooms,
     }
     return render(request, template_name="chat/room_chat.html", context=context)

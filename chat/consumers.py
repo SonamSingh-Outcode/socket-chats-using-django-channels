@@ -54,30 +54,35 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data=None, bytes_data=None):
         text_data = json.loads(text_data)
-        type = text_data.get("type", None)
+        message_type = text_data.get("type", None)
         message = text_data.get("message", None)
         author = text_data.get("author", None)
-        if type == "text_message":
+        if message_type == "text_message":
             user = await database_sync_to_async(User.objects.get)(username=author)
-            message = await database_sync_to_async(Message.objects.create)(
+            _message = await database_sync_to_async(Message.objects.create)(
                 author=user,
                 content=message,
                 room=self.room
             )
+
         await self.channel_layer.group_send(self.room_uuid, {
             "type": "text_message",
             "message": str(message),
-            "author": author
+            "author_name": "{} {}".format(user.first_name, user.last_name),
+            "author_email": user.email,
         })
 
     async def text_message(self, event):
         message = event["message"]
-        author = event.get("author")
+        author_email = event.get("author_email")
+        author_name = event.get("author_name")
 
         returned_data = {
             "type": "text_message",
             "message": message,
-            "room_uuid": self.room_uuid
+            "room_uuid": self.room_uuid,
+            "author_email": author_email,
+            "author_name": author_name,
         }
         await self.send(json.dumps(
             returned_data

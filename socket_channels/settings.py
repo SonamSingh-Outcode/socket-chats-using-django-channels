@@ -147,6 +147,6 @@ CHANNEL_LAYERS = {
 }
 
 LOGIN_REDIRECT_URL = "home"
-# LOGOUT_REDIRECT_URL = 'accounts/login'
+LOGOUT_REDIRECT_URL = '/accounts/login'
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
