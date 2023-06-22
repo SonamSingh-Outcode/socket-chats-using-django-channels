@@ -1,49 +1,131 @@
-<!-- chat/templates/chat/home.html -->
-{% extends 'chat/base.html' %}
-{% block title %} Home {% endblock title %}
-{% block content %}
-    <h1 style="margin-top: 3px;">Home Page</h1>
-    <ul class="list-group">
-     {% for room in rooms %}
-        <li class="list-group-item">
-        {{ room.name }}
-            {% if request.user in room.members.all %}
-                <button id="leave-{{ room.uuid }}" class="room_option button btn-danger"
-                        value="leave_room {{ room.uuid }}">
-                    Leave
-                </button>
-            {% else %}
-                <button id="join-{{ room.uuid }}" class="room_option button btn-primary" value="join_room {{ room.uuid }}">
-                    Join
-                </button>
-            {% endif %}
-            {% if request.user in room.members.all %}
-                <button id="open-{{ room.uuid }}" class="room_option button btn-secondary" value="open_room {{ room.uuid }}">
-                    Open
-                </button>
-            {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+          integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
 
-    <a href="{% url 'logout' %}"> <button class="btn btn-danger">Logout</button></a>
+    <title>Chat UI</title>
 
+    <style>
+        body {
+            margin-top: 20px;
+        }
 
-{% endblock content %}
+        .chat-online {
+            color: #34ce57
+        }
 
+        .chat-offline {
+            color: #e4606d
+        }
 
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            max-height: 800px;
+            overflow-y: scroll
+        }
 
-{% block script %}
+        .chat-message-left,
+        .chat-message-right {
+            display: flex;
+            flex-shrink: 0
+        }
 
-    <script>
+        .chat-message-left {
+            margin-right: auto
+        }
 
+        .chat-message-right {
+            flex-direction: row-reverse;
+            margin-left: auto
+        }
+
+        .py-3 {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+
+        .px-4 {
+            padding-right: 1.5rem !important;
+            padding-left: 1.5rem !important;
+        }
+
+        .flex-grow-0 {
+            flex-grow: 0 !important;
+        }
+
+        .border-top {
+            border-top: 1px solid #dee2e6 !important;
+        }
+    </style>
+</head>
+<body>
+
+<main class="content">
+    <div class="container p-0">
+        <h1 class="h3 mb-3">{{ request.user.first_name }} {{ request.user.last_name }}<a href="{% url 'logout' %}">
+            <button class="btn btn-danger float-right">Logout</button>
+        </a></h1>
+        <div class="col-12 col-lg-12 col-xl-8">
+            <div class="card p-2">
+                <div class="">
+                    <h2 class="ml-2">My Groups</h2>
+                    <div class="list-group">
+                        {% for room in rooms %}
+                            <div  class="list-group-item list-group-item-action">
+
+                                <div class="d-flex align-items-start">
+                                    <img src="https://bootdey.com/img/Content/avatar/avatar5.png"
+                                         class="rounded-circle mr-1"
+                                         alt="Vanessa Tucker" width="40" height="40">
+                                    <div class="flex-grow-1 ml-3" id="{{ room.uuid }}">
+                                        {{ room.name }}
+                                        <div>
+                                             {% if request.user in room.members.all %}
+                                                 <button id="leave-{{ room.uuid }}" class="room_option btn btn-danger"
+                                                         value="leave_room {{ room.uuid }}">
+                                                     Leave
+                                                 </button>
+                                             {% else %}
+                                                 <button id="join-{{ room.uuid }}" class="room_option btn btn-primary"
+                                                         value="join_room {{ room.uuid }}">
+                                                     Join
+                                                 </button>
+                                             {% endif %}
+                                            {% if request.user in room.members.all %}
+                                                <button id="open-{{ room.uuid }}" class="room_option btn btn-primary"
+                                                        value="open_room {{ room.uuid }}">
+                                                    Open
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
+        crossorigin="anonymous"></script>
+
+ <script>
         const base_url = `${window.location.hostname}:${window.location.port}`
-
         const websocket = new WebSocket(`ws://${base_url}`)
 
         websocket.onopen = function (event) {
             console.log('client says connection opened')
-            websocket.send("Client sends Welcome")
         }
 
         function leave_group_handler(uuid) {
@@ -54,6 +136,9 @@
             open_button.remove();
             let button = `<button id="join-${uuid}" class="group_option" value="join_group $    {uuid}">Join</button>`;
             let dev_body = document.getElementById(uuid);
+            console.log('leave');
+            console.log(uuid);
+            console.log(button);
             dev_body.innerHTML += button;
             add_event_to_all_buttons();
         }
@@ -68,8 +153,11 @@
                 Open</button>`
 
             var dev_body = document.getElementById(uuid)
-            dev_body.innerHTML += button
-            dev_body.innerHTML += open_button
+            dev_body.innerHTML += button;
+            dev_body.innerHTML += open_button;
+            console.log('join_group_handler');
+            console.log(uuid);
+            console.log(button);
             add_event_to_all_buttons()
 
 //get_all_buttons()
@@ -102,6 +190,6 @@
         }
         add_event_to_all_buttons()
     </script>
-{% endblock script %}
 
-    
+</body>
+</html>
