@@ -62,10 +62,11 @@ def room_chat_view(request, uuid):
 
     # get the list of all room members
     room_members = room.members.all()
-    rooms = Room.objects.all()
+    rooms = Room.objects.filter(members=request.user).all()
     context = {
         "message_and_event_list": sorted_message_event_list,
         "room_members": room_members,
         "rooms": rooms,
+        'current_room': room
     }
     return render(request, template_name="chat/room_chat.html", context=context)
