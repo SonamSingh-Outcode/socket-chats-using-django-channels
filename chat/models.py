@@ -38,14 +38,12 @@ class Room(models.Model):
         self.event_set.create(type="Left", user=user)
         self.save()
 
-
     def is_in_room(self, user: User) -> bool:
         """
             A helper function to remove users from room members when they
             leave the room and create an event for the timestamp the user left the room
         """
         return user in self.members.all()
-
 
 
 class Message(models.Model):
@@ -67,12 +65,12 @@ class Event(models.Model):
     CHOICES = [
         ("Join", "join"),
         ("Left", "left")
-        ]
+    ]
     type = models.CharField(choices=CHOICES, max_length=10)
     description = models.CharField(help_text="A description of the event that occurred", max_length=50, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
-    room = models.ForeignKey(Room ,on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
         self.description = f"{self.user} {self.type} the {self.room.name} room"

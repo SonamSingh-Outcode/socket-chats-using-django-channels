@@ -19,7 +19,6 @@ def home_view(request):
     return render(request, template_name="chat/home.html", context=context)
 
 
-
 @login_required
 def rooms_view(request):
     """

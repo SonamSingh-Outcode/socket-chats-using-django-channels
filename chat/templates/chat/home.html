@@ -66,9 +66,11 @@
 
 <main class="content">
     <div class="container p-0">
-        <h1 class="h3 mb-3">{{ request.user.first_name }} {{ request.user.last_name }}<a href="{% url 'logout' %}">
+        <h1 class="h3 mb-3">{{ request.user.first_name }} {{ request.user.last_name }}
+            <a href="{% url 'logout' %}">
             <button class="btn btn-danger float-right">Logout</button>
-        </a></h1>
+            </a>
+        </h1>
         <div class="col-12 col-lg-12 col-xl-8">
             <div class="card p-2">
                 <div class="">
@@ -86,18 +88,23 @@
                                         <div>
                                              {% if request.user in room.members.all %}
                                                  <button id="leave-{{ room.uuid }}" class="room_option btn btn-danger"
-                                                         value="leave_room {{ room.uuid }}">
+                                                         value="leave_room {{ room.uuid }}"
+                                                         onclick="send_event_message(event)">
                                                      Leave
                                                  </button>
                                              {% else %}
                                                  <button id="join-{{ room.uuid }}" class="room_option btn btn-primary"
-                                                         value="join_room {{ room.uuid }}">
+                                                         value="join_room {{ room.uuid }}"
+                                                        onclick="send_event_message(event)"
+                                                 >
                                                      Join
                                                  </button>
                                              {% endif %}
                                             {% if request.user in room.members.all %}
                                                 <button id="open-{{ room.uuid }}" class="room_option btn btn-primary"
-                                                        value="open_room {{ room.uuid }}">
+                                                        value="open_room {{ room.uuid }}"
+                                                        onclick="send_event_message(event)"
+                                                >
                                                     Open
                                                 </button>
                                             {% endif %}
@@ -122,73 +129,75 @@
 
  <script>
         const base_url = `${window.location.hostname}:${window.location.port}`
-        const websocket = new WebSocket(`ws://${base_url}`)
+        const websocket = new WebSocket(`ws://${base_url}`);
 
-        websocket.onopen = function (event) {
-            console.log('client says connection opened')
-        }
 
-        function leave_group_handler(uuid) {
+          function leave_group_handler(uuid) {
             /*Remove the Leave Button and Open button and create a new Join Button*/
-            let leave_button = document.getElementById(`leave -${uuid}`);
-            let open_button = document.getElementById(`open -${uuid}`);
+            let leave_button = document.getElementById(`leave-${uuid}`);
+            let open_button = document.getElementById(`open-${uuid}`);
             leave_button.remove();
             open_button.remove();
-            let button = `<button id="join-${uuid}" class="group_option" value="join_group $    {uuid}">Join</button>`;
+            let button = ` <button id="join-${ uuid }" class="room_option btn btn-primary"
+                                                         value="join_room ${ uuid }"
+                                                        onclick="send_event_message(event)"
+                                                 >Join</button>`;
             let dev_body = document.getElementById(uuid);
-            console.log('leave');
-            console.log(uuid);
-            console.log(button);
-            dev_body.innerHTML += button;
-            add_event_to_all_buttons();
+              dev_body.innerHTML += button;
+              console.log(button);
+
         }
 
         function join_group_handler(uuid) {
             /*Remove the Join Button and add the Leave and Open button*/
-            let  leave_button = document.getElementById(`join -${uuid}`)
-            leave_button.remove()
-            let  button = `<button id="leave-${uuid}" class="group_option" value="leave_group $    {uuid}">
-                Leave</button>`
-            let  open_button = `<button id="open-${uuid}" class="group_option" value="open_group ${uuid}">
-                Open</button>`
+            let join_button = document.getElementById(`join-${uuid}`);
+            join_button.remove();
+            let leave_button = ` <button id="leave-${uuid}" class="room_option btn btn-danger"
+                                value="leave_room ${uuid}"
+                                onclick="send_event_message(event)"
+                                >Leave</button>`;
 
-            var dev_body = document.getElementById(uuid)
-            dev_body.innerHTML += button;
+            let open_button = ` <button id="open-${uuid}" class="room_option btn btn-primary"
+                    value="open_room ${uuid}"
+                    onclick="send_event_message(event)"
+                    >Open</button>`;
+
+            let dev_body = document.getElementById(uuid)
+            dev_body.innerHTML += leave_button;
             dev_body.innerHTML += open_button;
-            console.log('join_group_handler');
-            console.log(uuid);
-            console.log(button);
-            add_event_to_all_buttons()
-
-//get_all_buttons()
         }
 
-        function add_event_to_all_buttons() {
-            /*Add an event listener that sends the event message to all buttons*/
-            const keys = document.querySelectorAll('.room_option');
-            keys.forEach(item => {
-                    item.addEventListener('click', send_event_message)
-                }
-            )
+
+        websocket.onopen = function (event) {
+            console.log('client says connection opened');
+        }
+
+        websocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            const message_type = data.type;
+            const uuid = data.data;
+            if(message_type == 'join_room'){
+                join_group_handler(uuid);
+            }else if(message_type == 'leave_room'){
+                leave_group_handler(uuid);
+            }
         }
 
         function send_event_message(event) {
             /*Send the uuid and the value of the button that was clicked*/
             const {target} = event;
-            room = target.value.split(" ")
-            room_uuid = room[1]
-            action = room[0]
+            const room = target.value.split(" ")
+            const room_uuid = room[1];
+            const action = room[0];
             if (action == "open_room") {
-                window.location.replace(`http://${base_url}/rooms/${room_uuid}` )
+                window.location.replace(`http://${base_url}/room/${room_uuid}` )
             } else {
-                data = {
-                    "type":action,
+                websocket.send(JSON.stringify({
+                    "type": action,
                     "data": room_uuid,
-                }
-                websocket.send(JSON.stringify(data))
+                }))
             }
         }
-        add_event_to_all_buttons()
     </script>
 
 </body>
