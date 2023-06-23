@@ -1,3 +1,4 @@
+{% load static %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,60 +8,8 @@
           integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
 
     <title>Chat UI</title>
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}" />
 
-    <style>
-        body {
-            margin-top: 20px;
-        }
-
-        .chat-online {
-            color: #34ce57
-        }
-
-        .chat-offline {
-            color: #e4606d
-        }
-
-        .chat-messages {
-            display: flex;
-            flex-direction: column;
-            max-height: 800px;
-            overflow-y: scroll
-        }
-
-        .chat-message-left,
-        .chat-message-right {
-            display: flex;
-            flex-shrink: 0
-        }
-
-        .chat-message-left {
-            margin-right: auto
-        }
-
-        .chat-message-right {
-            flex-direction: row-reverse;
-            margin-left: auto
-        }
-
-        .py-3 {
-            padding-top: 1rem !important;
-            padding-bottom: 1rem !important;
-        }
-
-        .px-4 {
-            padding-right: 1.5rem !important;
-            padding-left: 1.5rem !important;
-        }
-
-        .flex-grow-0 {
-            flex-grow: 0 !important;
-        }
-
-        .border-top {
-            border-top: 1px solid #dee2e6 !important;
-        }
-    </style>
 </head>
 <body>
 
@@ -83,8 +32,11 @@
                         </div>
                     </div>
                     {% for room in rooms %}
-
-                        <a href="/room/{{ room.uuid }}" class="list-group-item list-group-item-action border-0">
+                        {% if current_room.uuid == room.uuid %}
+                            <a href="/room/{{ room.uuid }}" class="list-group-item list-group-item-action border-0 active">
+                        {% else %}
+                            <a href="/room/{{ room.uuid }}" class="list-group-item list-group-item-action border-0 ">
+                        {% endif %}
                             <div class="d-flex align-items-start">
                                 <img src="https://bootdey.com/img/Content/avatar/avatar5.png" class="rounded-circle mr-1"
                                      alt="Vanessa Tucker" width="40" height="40">
@@ -117,7 +69,9 @@
                                     <div class="chat-message-left pb-4">
                                         <div>
                                             <img src="https://bootdey.com/img/Content/avatar/avatar3.png"
-                                                 class="rounded-circle mr-1" alt="Sharon Lessman" width="40"
+                                                 class="rounded-circle mr-1"
+                                                 alt="{{ message_event.author.first_name }} {{ message_event.author.last_name }}"
+                                                 width="40"
                                                  height="40">
                                             <div class="text-muted small text-nowrap mt-2">{{ message_event.timestamp | date:'Y-m-d H:i A' }}</div>
                                         </div>
