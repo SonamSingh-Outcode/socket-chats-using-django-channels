@@ -139,10 +139,7 @@
 
         chatSocket.onmessage = function (e) {
             const data = JSON.parse(e.data);
-            console.log("hello");
-            console.log(data);
             let html = "";
-
             if (data.author_email == current_user) {
                 html += '<div class="chat-message-left pb-4">';
             } else {
